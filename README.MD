@@ -66,3 +66,4 @@ DynamoDB has the schema:
 
 - Need to build UI with SPA framework for this API. The UI will have the email address logged in at first, and the form to add expense with at least 3 input fields: value of the expense, date of the expense, reason of the expense
 - Need to add user-pool with AWS Cognito and therefore add API key for the API
+- Add unit test for each endpoint
