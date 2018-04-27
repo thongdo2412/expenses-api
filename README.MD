@@ -48,7 +48,7 @@ yarn test
 | /addexpense | POST | add expense to DB |
 
 ## Notes
-The API is hosted by AWS Lambda (Public API) at  https://6ia18w5tw9.execute-api.us-east-1.amazonaws.com/prod/api/
+The API is hosted by AWS Lambda (Public API)
 
 and it will work with curl or httpie with the body param
 
