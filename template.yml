@@ -1,0 +1,117 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Expenses API Lambda
+
+Resources:
+  ExpensesLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+        Path: "/"
+        ManagedPolicyArns:
+          - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+          - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            -
+              Sid: "AllowLambdaServiceToAssumeRole"
+              Effect: "Allow"
+              Action:
+                - "sts:AssumeRole"
+              Principal:
+                Service:
+                  - "lambda.amazonaws.com"
+
+  ApiGatewayApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: expenses-api
+      StageName: prod
+      CacheClusterEnabled: false
+      # TODO: enable cache and move in-line definition to swagger.yml
+      # CacheClusterSize: "0.5"
+      # DefinitionUri: swagger.yml
+      DefinitionBody:
+        swagger: 2.0
+        info:
+          title: !Ref AWS::StackName
+        paths:
+          /api/{proxy+}:
+            x-amazon-apigateway-any-method:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ExpensesAPIFunction.Arn}/invocations
+              responses: {}
+            options:
+              consumes:
+              - application/json
+              produces:
+              - application/json
+              responses:
+                '200':
+                  description: 200 response
+                  schema:
+                    $ref: "#/definitions/Empty"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: string
+                    Access-Control-Allow-Methods:
+                      type: string
+                    Access-Control-Allow-Headers:
+                      type: string
+              x-amazon-apigateway-integration:
+                responses:
+                  default:
+                    statusCode: 200
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Methods: "'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT'"
+                      method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+                      method.response.header.Access-Control-Allow-Origin: "'*'"
+                passthroughBehavior: when_no_match
+                requestTemplates:
+                  application/json: "{\"statusCode\": 200}"
+                type: mock
+
+  ExpensesAPIFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: expenses-api
+      Handler: index.handler
+      Runtime: nodejs6.10
+      CodeUri: .
+      Description: Expense Input API Lambda
+      MemorySize: 128
+      Timeout: 300
+      Role: !GetAtt ExpensesLambdaRole.Arn
+      Policies: AmazonDynamoDBFullAccess
+      Events:
+        GetApiProxyResource:
+          Type: Api
+          Properties:
+            Path: /api/{proxy+}
+            Method: any
+            RestApiId: !Ref ApiGatewayApi
+            
+  ExpensesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      KeySchema:
+        -
+          AttributeName: email
+          KeyType: HASH
+        -
+          AttributeName: added_date
+          KeyType: RANGE
+      AttributeDefinitions:
+        -
+          AttributeName: "email"
+          AttributeType: "S"
+        -
+          AttributeName: "added_date"
+          AttributeType: "S"
+
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
