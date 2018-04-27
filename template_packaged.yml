@@ -46,13 +46,53 @@ Resources:
                 type: aws_proxy
                 uri:
                   Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ExpensesAPIFunction.Arn}/invocations
+        securityDefinitions:
+          expenses-cognito-authorizer:
+            in: header
+            name: Authorization
+            type: apiKey
+            x-amazon-apigateway-authorizer:
+              providerARNs:
+              - Fn::GetAtt:
+                - UserPool
+                - Arn
+              type: cognito_user_pools
+            x-amazon-apigateway-authtype: cognito_user_pools
         swagger: 2.0
       Name: expenses-api
       StageName: prod
     Type: AWS::Serverless::Api
+  CognitoIdentityPool:
+    Properties:
+      AllowUnauthenticatedIdentities: true
+      CognitoIdentityProviders:
+      - ClientId:
+          Ref: UserPoolClient
+        ProviderName:
+          Fn::Sub:
+          - cognito-idp.us-east-1.amazonaws.com/${UserPoolId}
+          - UserPoolId:
+              Ref: UserPool
+      DeveloperProviderName: expenses
+      IdentityPoolName: expenses
+    Type: AWS::Cognito::IdentityPool
+  CognitoIdentityPoolRole:
+    Properties:
+      IdentityPoolId:
+        Ref: CognitoIdentityPool
+      Roles:
+        authenticated:
+          Fn::GetAtt:
+          - ExpensesLambdaRole
+          - Arn
+        unauthenticated:
+          Fn::GetAtt:
+          - ExpensesLambdaRole
+          - Arn
+    Type: AWS::Cognito::IdentityPoolRoleAttachment
   ExpensesAPIFunction:
     Properties:
-      CodeUri: s3://expenses-api/expenses-api/717b0fce8b50ee3140be8d3980ed13a3
+      CodeUri: s3://expenses-api/expenses-api/51e52a9a055d98ce384152aa1e735cae
       Description: Expense Input API Lambda
       Events:
         GetApiProxyResource:
@@ -106,4 +146,27 @@ Resources:
         ReadCapacityUnits: 1
         WriteCapacityUnits: 1
     Type: AWS::DynamoDB::Table
+  UserPool:
+    Properties:
+      AutoVerifiedAttributes:
+      - email
+      EmailConfiguration:
+        ReplyToEmailAddress: dhthong@gmail.com
+      EmailVerificationSubject: Welcome to Expenses Input App!
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: true
+          RequireUppercase: true
+      UserPoolName: ExpensesPool
+    Type: AWS::Cognito::UserPool
+  UserPoolClient:
+    Properties:
+      ClientName: expenses-ui
+      GenerateSecret: false
+      UserPoolId:
+        Ref: UserPool
+    Type: AWS::Cognito::UserPoolClient
 Transform: AWS::Serverless-2016-10-31
