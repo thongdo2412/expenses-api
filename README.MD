@@ -47,6 +47,12 @@ yarn test
 | /getexpenses | POST | get expenses based on email |
 | /addexpense | POST | add expense to DB |
 
+Sample POST body: { 
+    "email": "email-address", 
+    "value": amount_of_expense, 
+    "date_of_expense": date_of_expense(string), 
+    "reason_of_expense": reason_of_expense(string) 
+    }
 ## Notes
 The API is hosted by AWS Lambda (Public API) at  https://6ia18w5tw9.execute-api.us-east-1.amazonaws.com/prod/api/expense
 

@@ -52,7 +52,7 @@ Resources:
     Type: AWS::Serverless::Api
   ExpensesAPIFunction:
     Properties:
-      CodeUri: s3://expenses-api/expenses-api/717b0fce8b50ee3140be8d3980ed13a3
+      CodeUri: s3://expenses-api/expenses-api/a23f3f9f26e7dbf2a42d51ad3dec43b5
       Description: Expense Input API Lambda
       Events:
         GetApiProxyResource:
