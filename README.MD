@@ -49,7 +49,7 @@ yarn test
 
 Sample POST body: { 
     "email": "email-address", 
-    "value": amount_of_expense, 
+    "value": amount_of_expense(string or number), 
     "date_of_expense": date_of_expense(string), 
     "reason_of_expense": reason_of_expense(string) 
     }
