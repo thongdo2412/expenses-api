@@ -54,7 +54,7 @@ Sample POST body: {
     "reason_of_expense": reason_of_expense(string) 
     }
 ## Notes
-The API is hosted by AWS Lambda (Public API) at  https://6ia18w5tw9.execute-api.us-east-1.amazonaws.com/prod/api/expense
+The API is hosted by AWS Lambda (Public API)
 
 and it will work with curl or httpie with the body param
 
@@ -72,3 +72,5 @@ DynamoDB has the schema:
 
 - Need to build UI with SPA framework for this API. The UI will have the email address logged in at first, and the form to add expense with at least 3 input fields: value of the expense, date of the expense, reason of the expense
 - Need to add user-pool with AWS Cognito and therefore add API key for the API
+- Add unit test for each endpoint
+- To scale: add cache to DynamoDB (Redis or native DAX for DynamoDB), add queue for multiple inputs to API (Kinesis Data Stream)

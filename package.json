@@ -5,7 +5,7 @@
   "description": "Expense Input API",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/thongdo2412/expenses-api.git"
   },
   "scripts": {
     "start": "./scripts/start",
